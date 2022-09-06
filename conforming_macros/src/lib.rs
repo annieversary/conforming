@@ -108,7 +108,7 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
               b
           }
 
-          fn serialize(&self) -> Result<FormBuilder<'static>, FormSerializeError> {
+          fn serialize(&self) -> Result<conforming::FormBuilder<'static>, conforming::FormSerializeError> {
               let mut b = conforming::FormBuilder::new("POST")
                   .with_submit("Send");
               #form_attrs
