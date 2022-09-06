@@ -1,10 +1,12 @@
 pub use conforming_macros::ToForm;
 
 mod form_field;
+mod helpers;
 pub use form_field::*;
 
 pub trait ToForm {
     fn to_form() -> FormBuilder<'static>;
+    fn serialize(&self) -> Result<FormBuilder<'static>, FormSerializeError>;
 }
 
 pub struct FormBuilder<'a> {
@@ -39,6 +41,7 @@ impl<'a> FormBuilder<'a> {
         self
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn with_input(
         mut self,
         input_type: &'a str,
@@ -46,7 +49,8 @@ impl<'a> FormBuilder<'a> {
         id: Option<&'a str>,
         label: Option<&'a str>,
         required: bool,
-        attributes: Vec<(&'a str, Option<&'a str>)>,
+        attributes: &'a [(&'a str, Option<&'a str>)],
+        value: Option<String>,
     ) -> Self {
         self.fields.push(Field {
             input_type,
@@ -55,6 +59,7 @@ impl<'a> FormBuilder<'a> {
             label,
             required,
             attributes,
+            value,
         });
         self
     }
@@ -94,6 +99,9 @@ impl<'a> FormBuilder<'a> {
             if field.required {
                 append!(" required");
             }
+            if let Some(val) = &field.value {
+                append!(" value=\"", val, "\"");
+            }
             for (name, value) in field.attributes {
                 append!(" ", name);
                 if let Some(value) = value {
@@ -125,7 +133,13 @@ pub struct Field<'a> {
     id: Option<&'a str>,
     label: Option<&'a str>,
     required: bool,
-    attributes: Vec<(&'a str, Option<&'a str>)>,
+    attributes: &'a [(&'a str, Option<&'a str>)],
+    value: Option<String>,
+}
+
+#[derive(Debug)]
+pub enum FormSerializeError {
+    FieldSerializationError(&'static str),
 }
 
 #[cfg(test)]
@@ -139,13 +153,21 @@ mod tests {
         let html = FormBuilder::new("POST")
             .with_action("/")
             .with_submit("go")
-            .with_input("string", "name", Some("name"), None, false, vec![])
-            .with_input("email", "email", Some("email"), None, false, vec![])
+            .with_input("string", "name", Some("name"), None, false, &[], None)
+            .with_input(
+                "email",
+                "email",
+                Some("email"),
+                None,
+                false,
+                &[],
+                "something@example.com".to_string().into(),
+            )
             .build();
 
         assert_eq!(
             html,
-            r#"<form action="/" method="POST"><input name="name" type="string" id="name"><input name="email" type="email" id="email"><button type="submit">go</button></form>"#
+            r#"<form action="/" method="POST"><input name="name" type="string" id="name"><input name="email" type="email" id="email" value="something@example.com"><button type="submit">go</button></form>"#
         )
     }
 }
