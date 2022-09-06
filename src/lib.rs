@@ -14,6 +14,9 @@ pub struct FormBuilder<'a> {
     action: Option<&'a str>,
     submit: Option<&'a str>,
 
+    form_attrs: Option<&'a [(&'a str, Option<&'a str>)]>,
+    button_attrs: Option<&'a [(&'a str, Option<&'a str>)]>,
+
     fields: Vec<Field<'a>>,
 }
 impl<'a> FormBuilder<'a> {
@@ -23,6 +26,8 @@ impl<'a> FormBuilder<'a> {
             action: None,
             submit: None,
             fields: vec![],
+            form_attrs: None,
+            button_attrs: None,
         }
     }
 
@@ -38,6 +43,16 @@ impl<'a> FormBuilder<'a> {
 
     pub fn with_submit(mut self, submit: &'a str) -> Self {
         self.submit = Some(submit);
+        self
+    }
+
+    pub fn with_form_attrs(mut self, form_attrs: &'a [(&'a str, Option<&'a str>)]) -> Self {
+        self.form_attrs = Some(form_attrs);
+        self
+    }
+
+    pub fn with_button_attrs(mut self, button_attrs: &'a [(&'a str, Option<&'a str>)]) -> Self {
+        self.button_attrs = Some(button_attrs);
         self
     }
 
@@ -66,7 +81,7 @@ impl<'a> FormBuilder<'a> {
 
     pub fn build(self) -> String {
         let mut o = format!(
-            r#"<form action="{}" method="{}">"#,
+            r#"<form action="{}" method="{}""#,
             self.action.unwrap_or_default(),
             self.method
         );
@@ -76,6 +91,16 @@ impl<'a> FormBuilder<'a> {
                 $(o.push_str($s);)*
             };
         }
+
+        if let Some(a) = self.form_attrs {
+            for (name, value) in a {
+                append!(" ", name);
+                if let Some(value) = value {
+                    append!("=\"", value, "\"");
+                }
+            }
+        }
+        append!(">");
 
         for field in self.fields {
             if let Some(label) = field.label {
@@ -116,7 +141,16 @@ impl<'a> FormBuilder<'a> {
         }
 
         if let Some(submit) = self.submit {
-            append!("<button type=\"submit\">", submit, "</button>");
+            append!("<button type=\"submit\"");
+            if let Some(a) = self.button_attrs {
+                for (name, value) in a {
+                    append!(" ", name);
+                    if let Some(value) = value {
+                        append!("=\"", value, "\"");
+                    }
+                }
+            }
+            append!(">", submit, "</button>");
         }
 
         append!("</form>");
@@ -153,6 +187,8 @@ mod tests {
         let html = FormBuilder::new("POST")
             .with_action("/")
             .with_submit("go")
+            .with_form_attrs(&[("a", Some("b"))])
+            .with_button_attrs(&[("c", None)])
             .with_input("string", "name", Some("name"), None, false, &[], None)
             .with_input(
                 "email",
@@ -167,7 +203,7 @@ mod tests {
 
         assert_eq!(
             html,
-            r#"<form action="/" method="POST"><input name="name" type="string" id="name"><input name="email" type="email" id="email" value="something@example.com"><button type="submit">go</button></form>"#
+            r#"<form action="/" method="POST" a="b"><input name="name" type="string" id="name"><input name="email" type="email" id="email" value="something@example.com"><button type="submit" c>go</button></form>"#
         )
     }
 }

@@ -2,40 +2,16 @@ use darling::*;
 use proc_macro2::TokenStream;
 use proc_macro_error::*;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Ident, Type, TypePath};
+use syn::{parse_macro_input, Ident, Type, TypePath};
 
 #[proc_macro_error]
-#[proc_macro_derive(ToForm, attributes(input))]
+#[proc_macro_derive(ToForm, attributes(input, form))]
 pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let DeriveInput { ident, data, .. } = parse_macro_input!(input);
+    let di = parse_macro_input!(input);
+    let form = Conforming::from_derive_input(&di).unwrap();
 
-    let data = if let Data::Struct(s) = data {
-        s
-    } else {
-        abort_call_site!("ToForm is only applicable to structs")
-    };
-    let fields = match &data.fields {
-        syn::Fields::Named(f) => &f.named,
-        _ => abort_call_site!("ToForm is only applicable to structs with named fields"),
-    };
+    let fields = form.data.take_struct().unwrap();
 
-    let fields = fields
-        .iter()
-        .map(|f| match ConformingField::from_field(f) {
-            Ok(a) => a,
-            Err(err) => {
-                if let Some(ident) = &f.ident {
-                    abort!(
-                        ident.span(),
-                        "Error with attribute in field {}: {err}",
-                        ident
-                    )
-                } else {
-                    abort_call_site!(err)
-                }
-            }
-        })
-        .collect::<Vec<_>>();
     let to_form = fields
         .iter()
         .map(|f| {
@@ -113,11 +89,26 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         })
         .collect::<TokenStream>();
 
+    let ident = form.ident;
+
+    let form_attrs = form.extra_attrs.map(|p| {
+        quote! {
+            b = b.with_form_attrs(&#p);
+        }
+    });
+    let button_attrs = form.button_attrs.map(|p| {
+        quote! {
+            b = b.with_button_attrs(&#p);
+        }
+    });
+
     let output = quote! {
       impl conforming::ToForm for #ident {
           fn to_form() -> conforming::FormBuilder<'static> {
               let mut b = conforming::FormBuilder::new("POST")
                   .with_submit("Send");
+              #form_attrs
+              #button_attrs
               #to_form
               b
           }
@@ -125,6 +116,8 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
           fn serialize(&self) -> Result<FormBuilder<'static>, FormSerializeError> {
               let mut b = conforming::FormBuilder::new("POST")
                   .with_submit("Send");
+              #form_attrs
+              #button_attrs
               #ser
               Ok(b)
           }
@@ -133,11 +126,22 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     output.into()
 }
 
+#[derive(Debug, FromDeriveInput)]
+#[darling(attributes(input, form), supports(struct_named))]
+struct Conforming {
+    ident: Ident,
+    data: ast::Data<util::Ignored, ConformingField>,
+
+    extra_attrs: Option<TypePath>,
+    button_attrs: Option<TypePath>,
+}
+
 #[derive(Debug, FromField)]
 #[darling(attributes(input))]
 struct ConformingField {
     ident: Option<Ident>,
     ty: Type,
+
     input_type: Option<String>,
     id: Option<String>,
     label: Option<String>,
