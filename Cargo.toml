@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 conforming_macros = { path = "./conforming_macros" }
-serde = "1.0.144"
-serde_json = "1.0.85"
+serde = { version = "1.0.144", features = ["derive"] }
+serde_urlencoded = "0.7.1"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"

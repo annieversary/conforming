@@ -1,7 +1,7 @@
 pub use conforming_macros::ToForm;
 
 mod form_field;
-mod helpers;
+pub mod helpers;
 pub use form_field::*;
 
 pub trait ToForm {

@@ -10,17 +10,8 @@ const BUTTON_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("color: blue"))]
 struct MyForm {
     #[input(id = "user_name", extra_attrs = "NAME_ATTRS")]
     name: String,
-    #[input(input_type = "email", serializer = "my_serializer")]
+    #[input(input_type = "email")]
     email: Option<String>,
-}
-
-fn my_serializer(f: &Option<String>) -> Result<String, ()> {
-    let v = if let Some(v) = f {
-        v.clone()
-    } else {
-        "no value".to_string()
-    };
-    Ok(v)
 }
 
 fn main() {
@@ -44,6 +35,6 @@ fn main() {
 
     assert_eq!(
         html,
-        r#"<form action="" method="POST" style="background: black; color: white"><input name="name" type="text" id="user_name" required value="ernesto" style="background: red"><input name="email" type="email" value="no value"><button type="submit" style="color: blue">Send</button></form>"#
+        r#"<form action="" method="POST" style="background: black; color: white"><input name="name" type="text" id="user_name" required value="ernesto" style="background: red"><input name="email" type="email" value=""><button type="submit" style="color: blue">Send</button></form>"#
     );
 }
