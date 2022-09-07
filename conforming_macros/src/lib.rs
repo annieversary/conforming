@@ -70,6 +70,11 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             } else {
                 quote!(<#ty as conforming::FormField>::REQUIRED)
             };
+            let ser = if let Some(ser) = &f.serializer {
+                quote!(#ser)
+            } else {
+                quote!(<#ty as conforming::FormField>::SERIALIZER)
+            };
             let attrs = if let Some(a) = &f.extra_attrs {
                 quote!(&#a)
             } else {
@@ -83,7 +88,7 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     #label,
                     #required,
                     #attrs,
-                    Some(conforming::helpers::ser(&self.#name).map_err(|_| conforming::FormSerializeError::FieldSerializationError(#name_str))?),
+                    Some(#ser(&self.#name).map_err(|_| FormSerializeError::FieldSerializationError(#name_str))?),
                 );
             }
         })
@@ -147,6 +152,7 @@ struct ConformingField {
     label: Option<String>,
     required: Option<bool>,
     extra_attrs: Option<TypePath>,
+    serializer: Option<TypePath>,
     skip: Option<bool>,
     no_label: Option<bool>,
 }

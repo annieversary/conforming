@@ -11,14 +11,31 @@ const BUTTON_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("color: blue"))]
 struct MyForm {
     #[input(id = "user_name", extra_attrs = "NAME_ATTRS")]
     name: String,
-    #[input(input_type = "email", no_label)]
+    #[input(input_type = "email", no_label, serializer = "my_serializer")]
     email: Option<String>,
-    #[input(input_type = "password")]
+    #[input(input_type = "password", serializer = "pw_serializer")]
     password: String,
-    #[input(input_type = "password", label = "repeat password")]
+    #[input(
+        input_type = "password",
+        label = "repeat password",
+        serializer = "pw_serializer"
+    )]
     password_confirmation: String,
     #[input(skip)]
     skipped_field: u32,
+}
+
+fn my_serializer(f: &Option<String>) -> Result<String, ()> {
+    let v = if let Some(v) = f {
+        v.clone()
+    } else {
+        "no value".to_string()
+    };
+    Ok(v)
+}
+
+fn pw_serializer(_: &String) -> Result<String, ()> {
+    Ok("".to_string())
 }
 
 fn main() {
@@ -45,6 +62,6 @@ fn main() {
 
     assert_eq!(
         html,
-        r#"<form action="" method="POST" style="background: black; color: white"><input name="name" type="text" id="user_name" required value="ernesto" style="background: red"><input name="email" type="email" value=""><input name="password" type="password" required value="hunter2"><label>repeat password<input name="password_confirmation" type="password" required value="hunter2"></label><button type="submit" style="color: blue">Send</button></form>"#
+        r#"<form action="" method="POST" style="background: black; color: white"><input name="name" type="text" id="user_name" required value="ernesto" style="background: red"><input name="email" type="email" value="no value"><input name="password" type="password" required value=""><label>repeat password<input name="password_confirmation" type="password" required value=""></label><button type="submit" style="color: blue">Send</button></form>"#
     );
 }
