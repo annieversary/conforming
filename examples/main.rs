@@ -11,7 +11,12 @@ const BUTTON_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("color: blue"))]
 struct MyForm {
     #[input(id = "user_name", extra_attrs = "NAME_ATTRS")]
     name: String,
-    #[input(input_type = "email", no_label, serializer = "my_serializer")]
+    #[input(
+        input_type = "email",
+        rename = "user_email",
+        no_label,
+        serializer = "my_serializer"
+    )]
     email: Option<String>,
     #[input(skip)]
     skipped_field: u32,
@@ -50,7 +55,7 @@ fn main() {
 
     assert_eq!(
         html,
-        r#"<form action="" method="POST" style="background: black; color: white"><label for="user_name">name<input name="name" type="text" id="user_name" required style="background: red"></label><input name="email" type="email"><label>password<input name="password" type="password" required></label><label>repeat password<input name="password_confirmation" type="password" required></label><button type="submit" style="color: blue">Send</button></form>"#
+        r#"<form action="" method="POST" style="background: black; color: white"><label for="user_name">name<input name="name" type="text" id="user_name" required style="background: red"></label><input name="user_email" type="email"><label>password<input name="password" type="password" required></label><label>repeat password<input name="password_confirmation" type="password" required></label><button type="submit" style="color: blue">Send</button></form>"#
     );
 
     // serialize struct into form
@@ -70,6 +75,6 @@ fn main() {
 
     assert_eq!(
         html,
-        r#"<form action="" method="POST" style="background: black; color: white"><label for="user_name">name<input name="name" type="text" id="user_name" required value="ernesto" style="background: red"></label><input name="email" type="email" value="no value"><label>password<input name="password" type="password" required value=""></label><label>repeat password<input name="password_confirmation" type="password" required value=""></label><button type="submit" style="color: blue">Send</button></form>"#
+        r#"<form action="" method="POST" style="background: black; color: white"><label for="user_name">name<input name="name" type="text" id="user_name" required value="ernesto" style="background: red"></label><input name="user_email" type="email" value="no value"><label>password<input name="password" type="password" required value=""></label><label>repeat password<input name="password_confirmation" type="password" required value=""></label><button type="submit" style="color: blue">Send</button></form>"#
     );
 }

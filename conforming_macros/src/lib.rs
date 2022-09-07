@@ -84,7 +84,11 @@ fn field(f: &ConformingField, serialize: bool) -> TokenStream {
         quote!(<#ty as conforming::FormField>::TYPE)
     };
     let name = f.ident.as_ref().unwrap();
-    let name_str = name.to_string();
+    let name_str = if let Some(n) = &f.rename {
+        n.clone()
+    } else {
+        name.to_string()
+    };
     let id = opt(f.id.as_ref());
 
     let no_label = f.no_label;
@@ -179,6 +183,7 @@ struct ConformingField {
     no_label: bool,
     #[darling(default)]
     flatten: bool,
+    rename: Option<String>,
 }
 
 fn opt<T: ToTokens>(v: Option<T>) -> TokenStream {
