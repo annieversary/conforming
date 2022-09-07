@@ -13,6 +13,14 @@ struct MyForm {
     name: String,
     #[input(input_type = "email", no_label, serializer = "my_serializer")]
     email: Option<String>,
+    #[input(skip)]
+    skipped_field: u32,
+    #[input(flatten)]
+    password: Password,
+}
+
+#[derive(ToForm)]
+struct Password {
     #[input(input_type = "password", serializer = "pw_serializer")]
     password: String,
     #[input(
@@ -21,8 +29,6 @@ struct MyForm {
         serializer = "pw_serializer"
     )]
     password_confirmation: String,
-    #[input(skip)]
-    skipped_field: u32,
 }
 
 fn my_serializer(f: &Option<String>) -> Result<String, ()> {
@@ -53,8 +59,10 @@ fn main() {
         name: "ernesto".to_string(),
         email: None,
         skipped_field: 3,
-        password: "hunter2".to_string(),
-        password_confirmation: "hunter2".to_string(),
+        password: Password {
+            password: "hunter2".to_string(),
+            password_confirmation: "hunter2".to_string(),
+        },
     }
     .serialize()
     .unwrap()
@@ -62,6 +70,6 @@ fn main() {
 
     assert_eq!(
         html,
-        r#"<form action="" method="POST" style="background: black; color: white"><input name="name" type="text" id="user_name" required value="ernesto" style="background: red"><input name="email" type="email" value="no value"><input name="password" type="password" required value=""><label>repeat password<input name="password_confirmation" type="password" required value=""></label><button type="submit" style="color: blue">Send</button></form>"#
+        r#"<form action="" method="POST" style="background: black; color: white"><label for="user_name">name<input name="name" type="text" id="user_name" required value="ernesto" style="background: red"></label><input name="email" type="email" value="no value"><label>password<input name="password" type="password" required value=""></label><label>repeat password<input name="password_confirmation" type="password" required value=""></label><button type="submit" style="color: blue">Send</button></form>"#
     );
 }

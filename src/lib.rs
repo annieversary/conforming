@@ -17,7 +17,7 @@ pub struct FormBuilder<'a> {
     form_attrs: Option<&'a [(&'a str, Option<&'a str>)]>,
     button_attrs: Option<&'a [(&'a str, Option<&'a str>)]>,
 
-    fields: Vec<Field<'a>>,
+    pub fields: Vec<Field<'a>>,
 }
 impl<'a> FormBuilder<'a> {
     pub fn new(method: &'a str) -> Self {
@@ -162,13 +162,13 @@ impl<'a> FormBuilder<'a> {
 // TODO allow checkboxes and radio buttons
 
 pub struct Field<'a> {
-    input_type: &'a str,
-    name: &'a str,
-    id: Option<&'a str>,
-    label: Option<&'a str>,
-    required: bool,
-    attributes: &'a [(&'a str, Option<&'a str>)],
-    value: Option<String>,
+    pub input_type: &'a str,
+    pub name: &'a str,
+    pub id: Option<&'a str>,
+    pub label: Option<&'a str>,
+    pub required: bool,
+    pub attributes: &'a [(&'a str, Option<&'a str>)],
+    pub value: Option<String>,
 }
 
 #[derive(Debug)]
