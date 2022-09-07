@@ -22,3 +22,5 @@ fn main() {
     )
 }
 #+end_src
+
+it's made for use in [[https://github.com/annieversary/astel/][astel]], so it's currently very focused on that. as i use it more on other projects, it will probably evolve into something more general. please feel free to open prs/issues :)
