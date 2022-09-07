@@ -24,7 +24,10 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             };
             let name_str = f.ident.as_ref().unwrap().to_string();
             let id = opt(f.id.as_ref());
-            let label = opt(f.label.as_ref());
+
+            let no_label = f.no_label.unwrap_or(false);
+            let label =
+                opt((!no_label).then(|| f.label.clone().or_else(|| Some(name_str.clone()))));
             let required = if let Some(t) = f.required {
                 quote!(#t)
             } else {
@@ -145,6 +148,7 @@ struct ConformingField {
     required: Option<bool>,
     extra_attrs: Option<TypePath>,
     skip: Option<bool>,
+    no_label: Option<bool>,
 }
 
 fn opt<T: ToTokens>(v: Option<T>) -> TokenStream {

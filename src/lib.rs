@@ -104,9 +104,9 @@ impl<'a> FormBuilder<'a> {
 
         for field in self.fields {
             if let Some(label) = field.label {
-                append!("<label ");
+                append!("<label");
                 if let Some(id) = field.id {
-                    append!("for=\"", id, "\"");
+                    append!(" for=\"", id, "\"");
                 }
                 append!(">", label);
             }
