@@ -88,7 +88,7 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                     #label,
                     #required,
                     #attrs,
-                    Some(#ser(&self.#name).map_err(|_| FormSerializeError::FieldSerializationError(#name_str))?),
+                    Some(#ser(&self.#name).map_err(|_| conforming::FormSerializeError::FieldSerializationError(#name_str))?),
                 );
             }
         })
