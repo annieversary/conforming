@@ -14,6 +14,7 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let to_form = fields
         .iter()
+        .filter(|f| !f.skip.unwrap_or(false))
         .map(|f| {
             let ty = &f.ty;
             let input_type = if let Some(t) = &f.input_type {
@@ -49,6 +50,7 @@ pub fn to_form(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .collect::<TokenStream>();
     let ser = fields
         .iter()
+        .filter(|f| !f.skip.unwrap_or(false))
         .map(|f| {
             let ty = &f.ty;
             let input_type = if let Some(t) = &f.input_type {
@@ -142,6 +144,7 @@ struct ConformingField {
     label: Option<String>,
     required: Option<bool>,
     extra_attrs: Option<TypePath>,
+    skip: Option<bool>,
 }
 
 fn opt<T: ToTokens>(v: Option<T>) -> TokenStream {

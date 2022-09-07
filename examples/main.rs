@@ -5,6 +5,7 @@ const FORM_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("background: black
 const NAME_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("background: red"))];
 const BUTTON_ATTRS: [(&str, Option<&str>); 1] = [("style", Some("color: blue"))];
 
+#[allow(dead_code)]
 #[derive(ToForm)]
 #[form(extra_attrs = "FORM_ATTRS", button_attrs = "BUTTON_ATTRS")]
 struct MyForm {
@@ -12,6 +13,8 @@ struct MyForm {
     name: String,
     #[input(input_type = "email")]
     email: Option<String>,
+    #[input(skip)]
+    skipped_field: u32,
 }
 
 fn main() {
@@ -28,6 +31,7 @@ fn main() {
     let html = MyForm {
         name: "ernesto".to_string(),
         email: None,
+        skipped_field: 3,
     }
     .serialize()
     .unwrap()
