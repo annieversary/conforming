@@ -1,6 +1,8 @@
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::Serialize;
 
+use crate::helpers::{date_ser, datetime_ser, time_ser};
+
 pub trait FormField: Serialize {
     const TYPE: &'static str = "text";
     const REQUIRED: bool = true;
@@ -58,12 +60,6 @@ impl<'a> FormField for &'a str {
 // TODO this will eventually be a checkbox or something
 impls!("text", serde_json::to_string, serde_json::Error, bool);
 
-impls!(
-    "datetime-local",
-    serde_json::to_string,
-    serde_json::Error,
-    NaiveDateTime
-);
-
-impls!("date", serde_json::to_string, serde_json::Error, NaiveDate);
-impls!("time", serde_json::to_string, serde_json::Error, NaiveTime);
+impls!("datetime-local", datetime_ser, (), NaiveDateTime);
+impls!("date", date_ser, (), NaiveDate);
+impls!("time", time_ser, (), NaiveTime);
