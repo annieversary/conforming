@@ -1,3 +1,4 @@
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::Serialize;
 
 pub trait FormField: Serialize {
@@ -53,3 +54,16 @@ impl<'a> FormField for &'a str {
 }
 
 // TODO impls for chrono and time and stuff
+
+// TODO this will eventually be a checkbox or something
+impls!("text", serde_json::to_string, serde_json::Error, bool);
+
+impls!(
+    "datetime-local",
+    serde_json::to_string,
+    serde_json::Error,
+    NaiveDateTime
+);
+
+impls!("date", serde_json::to_string, serde_json::Error, NaiveDate);
+impls!("time", serde_json::to_string, serde_json::Error, NaiveTime);

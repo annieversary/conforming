@@ -1,3 +1,5 @@
+//! this tries to be a fully featured example to showcase as much as possible
+
 use conforming::*;
 use pretty_assertions::assert_eq;
 
